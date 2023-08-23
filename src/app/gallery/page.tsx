@@ -1,40 +1,34 @@
-'use client';
-import { Button } from '@/components/ui/button';
-import { CldUploadButton } from 'next-cloudinary';
+import UploadButton from '@/components/ui/UploadButton';
 import React, { FC } from 'react';
+import cloudinary from 'cloudinary';
+import { CldImage } from 'next-cloudinary';
+import CloudinaryImage from '@/components/CloudinaryImage';
 
 interface pageProps {}
 
-const page: FC<pageProps> = ({}) => {
+const page = async ({}: pageProps) => {
+  const result = (await cloudinary.v2.search
+    .expression('resource_type:image')
+    .sort_by('created_at', 'desc')
+    .max_results(10)
+    .execute()) as { resources: SearchResult[] };
+
+  console.log(result, 'test');
   return (
     <section>
-      <div className='flex justify-between'>
-        <h1 className='text-4xl font-bold'>Gallery</h1>
-        <Button asChild>
-          <div className='flex gap-2'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke-width='1.5'
-              stroke='currentColor'
-              className='w-6 h-6'
-            >
-              <path
-                stroke-linecap='round'
-                stroke-linejoin='round'
-                d='M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5'
-              />
-            </svg>
-
-            <CldUploadButton
-              uploadPreset='gallerio'
-              onUpload={(result: any) => {
-                //   setImageId(result.info.public_id);
-              }}
+      <div className=' flex flex-col gap-8'>
+        <div className='flex justify-between'>
+          <h1 className='text-4xl font-bold'>Gallery</h1>
+          <UploadButton />
+        </div>
+        <div className='grid grid-cols-4 gap-4'>
+          {result.resources.map((result) => (
+            <CloudinaryImage
+              public_id={result.public_id}
+              key={result.public_id}
             />
-          </div>
-        </Button>
+          ))}
+        </div>
       </div>
     </section>
   );
